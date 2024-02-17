@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% if user_requests %}
+    <div id="alert-container" class="mt-4" role="alert"></div>
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8 text-center"> 
+            <div class="text-center">
+                <h4 class="mb-3">Your evaluation is done !</h4>
+                <p class="mb-3 mt-3"> This is your unique request identifier. Copy it and use it to search for your results later, by pasting it in the search bar.</p>
+                <div class="input-group">
+                    <input type="text" value="{{ user_requests.hash }}" id="hashValue" class="form-control" readonly>
+                    <button type="button" onclick="copyHash()" class="btn btn-outline-light">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2>Protein Sequences</h2>
+
+    <div class="d-flex justify-content-end ">
+      <a href="{% url 'download-csv' pk=user_requests.hash %}" class="btn btn-outline-light mt-2"> Download CSV </a>
+    </div>
+    <div class="container mt-2 bg-light p-4 rounded">
+      <div class="accordion" id="accordionExample">
+        {% for sequence in sequences %}
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+            <button class="accordion-button{% if forloop.first %} show{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+              {{ sequence.identifiers }}
+              <span class="ml-8">
+                {% if sequence.thermophilic %}
+                <span class="badge rounded-pill thermophilic-badge ">Thermophilic</span>
+                {% else %}
+                <span class="badge rounded-pill non-thermophilic-badge">Non-Thermophilic</span>
+                {% endif %}
+              </span>
+            </button>
+          </h2>
+          <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse{% if forloop.first %} show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#accordionExample">
+            <div class="accordion-body">
+              <p class="sequence">Sequence: {{ sequence.sequence }}</p>
+              <p>Score: {{ sequence.score }}</p>
+              <p>
+                <strong>Prediction:</strong>
+                {% if sequence.thermophilic %}
+                <span class="badge rounded-pill thermophilic-badge">Thermophilic</span>
+                {% else %}
+                <span class="badge rounded-pill non-thermophilic-badge">Non-Thermophilic</span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p>No protein sequences found for this request.</p>        
+        {% endfor %}
+      </div>
+      
+      {% else %}
+      <p>Sorry, there was an error. Please try again.</p>
+      {% endif %}
+    </div>
+
+
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete this request?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <a href="{% url 'delete' pk=user_requests.hash %}" class="btn btn-danger">Yes, Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+    <button type="button" class="btn btn-danger mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+      Delete
+    </button>
+  <style>
+    .accordion-item {
+      background-color: white;
+      border: 1px solid #dee2e6;
+      border-radius: 0.25rem;
+      margin-bottom: 10px;
+    }
+
+    .accordion-button {
+      background-color: white;
+      color: black;
+      border: none;
+      text-align: left;
+    }
+
+    .accordion-button:focus {
+      box-shadow: none;
+    }
+
+    .accordion-button.collapsed {
+      background-color: white;
+      color: black;
+    }
+
+    .accordion-body {
+      background-color: white;
+      border-top: 1px solid #dee2e6;
+      padding: 15px;
+    }
+
+    .badge {
+      margin-left: 10px;
+    }
+
+    .thermophilic-badge {
+        background-color: RGB(122, 185, 41) /* Your background color */;
+        color: /* Your text color */;
+      }
+    .non-thermophilic-badge {
+        background-color: RGB(185, 41, 122) /* Your background color */;
+        color: /* Your text color */;
+    }
+    .sequence {
+        overflow-wrap: break-word; /* Add this line to wrap long words */
+      }
+  </style>
+</div>
+
+<script>
+  function copyHash() {
+    /* Get the text input element */
+    var inputElement = document.getElementById('hashValue'); 
+    
+    /* Select the text in the input element */
+    inputElement.select();
+    
+    /* Copy the selected text to the clipboard */
+    document.execCommand('copy');
+    
+    /* Deselect the text */
+    window.getSelection().removeAllRanges();
+    
+    /* Display a message  */
+    var alertElement = `
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+          Request hash copied to clipboard
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+  `;
+  
+  /* Display the Bootstrap alert by appending it to the #alert-container div */
+  document.getElementById('alert-container').innerHTML = alertElement;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}
+ProLaTherm
+{% endblock %}
+{% block content %}
+<!-- Add this in your <head> section -->
+
+<div class="container mt-3 text-center">
+    <h1>Welcome to ProLaTherm</h1>
+    <p>Introducing ProLaTherm, a cutting-edge thermophilicity predictor for protein sequences.</p>
+    <p>Powered by advanced Protein Language models, ProLaTherm is an initiative of the <a href="https://bit.cs.tum.de">Grimm Lab</a> at the Technical University of Munich.</p>
+    <p>For a deep dive into the science and methodology behind ProLaTherm, explore our <a href="https://bit.cs.tum.de">research publication</a>.</p>
+</div>
+
+<div class="container mt-3 mb-3 bg-light p-4 rounded">
+    <!-- Stats Display -->
+    <div class="row mb-5">
+        {% for key, value in stats.items %}
+        <div class="col-md-6 mb-4">
+            <div class="card custim-card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title custom-text">{{ value.label }}</h5>
+                    <p class="card-text custom-text">Total: {{ value.total }}</p>
+                    <p class="card-text custom-text">This month: {{ value.this_month }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- User Input Form with Dropzone -->
+    <div class="form-group">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if msg %}
+        
+            <div class="alert alert-danger" role="alert">
+                {{msg}}
+            </div>
+        
+            {% endif %}
+            {{ form.as_p }}
+            <button class="btn btn-outline-light" > Evaluate </button>
+        </form>
+    </div>
+</div>
+
+
+<style>
+    #uploadArea.dragover {
+        border-color: #007bff; /* Change to any color you prefer */
+        background-color: #f7f7f7;
+    }
+
+    .custom-card {
+        background-color: #FFA500; /* Custom background color (e.g., orange) */
+    }
+
+    .custom-text {
+        color: RGB(41, 122, 185); /* Custom text color (e.g., blue) */
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}
+ProLaTherm User Guide
+{% endblock %}
+{% block content %}
+
+<div class="container mt-4 text-center">
+    <h1>ProLaTherm User Guide</h1>
+    <p>Welcome to the ProLaTherm user guide. This guide will walk you through the steps to effectively use ProLaTherm</p>
+</div>
+
+<div class="container mt-5 bg-light p-4 rounded">
+    <h2> Web Application </h2>
+    </br>
+    <!-- Step 1: Accessing ProLaTherm and Viewing Statistics -->
+    <h4>Step 1: Starting Your Evaluation</h4>
+
+    <ol>
+        <li><strong>Accessing the Homepage</strong>: Begin by clicking on "ProLaTherm" located in the top right corner to navigate to the homepage.</li>
+        <li><strong>Viewing ProLaTherm Statistics</strong>: On the homepage, you'll be presented with statistics showcasing ProLaTherm's usage.</li>
+        <li><strong>Inputting Protein Sequences</strong>:
+            <ul>
+                <li><strong>File Upload</strong>: Use the input box to drag and drop a file containing protein sequences in FASTA format. Ensure that each identifier in the file is followed by a '|' symbol, separating it from the sequence. Incorrectly formatted sequences will not be evaluated.</li>
+                <li><strong>Direct Input</strong>: Alternatively, you can manually type or paste your protein sequences directly into the text field. Ensure your sequences are correctly formatted, as incorrectly formatted sequences will not be evaluated.</li>
+                <li><strong>Example:</strong><br>
+                    <div class="indent-code mb-2">
+                        <code>
+                            &gt;sequence1|description|<br>
+                            ATGGCCAACTAG...<br>
+                            &gt;sequence2|description|<br>
+                            GATCCGATTACA...
+                        </code>
+                    </div>
+                    
+            </li>
+            </ul>
+        </li>
+        
+        <li><strong>Initiating the Evaluation</strong>: Once you've entered your data, click the "Evaluate" button to begin the thermophilicity prediction.</li>
+    </ol>
+    <!-- Step 2: Submitting Protein Sequences -->
+    <h4>Step 2: Monitoring Progress</h4>
+
+    <ol>
+        <li><strong>Redirected to Waiting Screen</strong>: After submitting your data, you'll be taken to a waiting screen where your request is queued for evaluation.</li>
+        <li><strong>Evaluation Duration</strong>: The time taken for the evaluation can vary. It depends on the number of requests already in the queue and the size of your data.</li>
+        <li><strong>Request Identifier</strong>: On this screen, you'll see a unique request identifier. This identifier can be copied and used later to retrieve your results using the search functionality in the top right corner. To copy the identifier, simply click the "Copy" button next to it.</li>
+        <li><strong>Progress Monitoring</strong>: A progress bar is displayed below the request identifier, providing real-time updates on the evaluation's progress.</li>
+        <li><strong>Email Notifications</strong>: If you'd like to be notified via email once your results are ready, enter your email address in the provided field and click "Submit".</li>
+    </ol>
+
+
+    <h4>Step 3: Reviewing Your Results</h4>
+    <ol>
+        <li><strong>Automatic Redirection</strong>: Once the evaluation completes, you'll be automatically redirected to the results page.</li>
+        <li><strong>Unique Identifier</strong>: At the top of the results page, you'll find your unique identifier. This can be used to revisit your results at any time in the future.</li>
+        <li><strong>Sequence Overview</strong>: Each of your protein sequences will be listed with an accompanying tag indicating its thermophilicity status. Clicking on a specific sequence will reveal more detailed information.</li>
+        <li><strong>Detailed Sequence Information</strong>: For each sequence, a dropdown will provide the full sequence, its score, and the thermophilic tag.</li>
+        <li><strong>Downloading Results</strong>: If you wish to analyze your results offline, click the "Download" button to receive a CSV file of your data.</li>
+        <li><strong>Data Retention and Deletion</strong>: For data privacy, there's an option to immediately delete your data using the "Delete" button. Additionally, all data is automatically purged 30 days after submission.</li>
+    </ol>
+
+</div>
+
+<div class="container mb-5 mt-5 bg-light p-4 rounded">
+    <h2>API Integration</h2>
+    
+    <h4>Submitting a User Request</h4>
+    <ol>
+        <li><strong>API Endpoint:</strong> Direct your POST request to <a href="http://www.prolatherm.de/api/user-request/" target="_blank">www.prolatherm.de/api/user-request/</a>.</li>
+        <li><strong>Preparing Your Request:</strong>
+            <ul>
+                <li><strong>File:</strong> Attach the file containing your protein sequences. Ensure that the sequences are in the correct format.</li>
+                <li><strong>Data:</strong> Optionally, include an email address in the data payload for notifications.</li>
+            </ul>
+        </li>
+        <li><strong>Response Handling:</strong>
+            <ul>
+                <li>On success, a message with a link to your results is provided: <code>http://www.prolatherm.de/results/{unique_hash}</code>.</li>
+                <li>On error, an informative message detailing the problem is returned.</li>
+            </ul>
+        </li>
+        <li><strong>Notifications:</strong> If an email was provided, a notification will be sent once results are ready.</li>
+    </ol>
+
+    <h4>Checking the Status of Your Request</h4>
+    <ol>
+        <li><strong>API Endpoint for Status Check:</strong> Send a GET request to <a href="http://www.prolatherm.de/api/status/{unique_hash}" target="_blank">www.prolatherm.de/api/status/{unique_hash}</a> to check the status of your request.</li>
+        <li><strong>Response Handling:</strong>
+            <ul>
+                <li>On completion, a status of <code>ready</code> and progress of <code>100</code> is returned.</li>
+                <li>Otherwise, a status of <code>processing</code> and the progress percentage is provided.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h4>Downloading Your Results as a CSV File</h4>
+    <ol>
+        <li><strong>API Endpoint for CSV Download:</strong> To download results as a CSV file, send a GET request to <a href="http://www.prolatherm.de/api/csv/{unique_hash}" target="_blank">www.prolatherm.de/api/csv/{unique_hash}</a>.</li>
+        <li><strong>CSV File Structure:</strong>
+            <ul>
+                <li>The CSV file has a header row with columns: <code>identifiers</code>, <code>sequence</code>, <code>score</code>, and <code>thermophilic</code>.</li>
+                <li>Each row represents a protein sequence and its evaluation results.</li>
+            </ul>
+        </li>
+        <li><strong>File Naming:</strong> The downloaded file is named <code>{unique_hash}_ProLaTherm.csv</code>.</li>
+    </ol>
+    <p>For an example, you can download our Python script:</p>
+    <a href="{% url 'downlaod-script' %}" class="btn btn-outline-light mt-2 ml-3"> Download Script </a>
+    
+
+</div>
+
+<div class="container mb-5 mt-5 bg-light p-4 rounded">
+    <h2>Docker Container</h2>
+    <p>
+        The codebase, along with the Docker and Celery configurations, is hosted on GitHub. You can clone or explore 
+        the repository to understand the setup in detail. Visit the 
+        <a href="https://github.com/grimmlab/" target="_blank">ProLaTherm GitHub Repository</a> for more 
+        information and the latest updates.
+    </p>
+    
+</div>
+
+
+
+<style>
+    .indent-code {
+        margin-left: 70px; 
+        display: block;
+    }
+</style>
+
+
+{% endblock %}

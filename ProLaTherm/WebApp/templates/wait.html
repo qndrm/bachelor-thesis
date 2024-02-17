@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="alert-container" class="mt-4" role="alert"></div>
+<!-- Message Display -->
+{% if msg %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ msg }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+{% endif %}
+
+<div class="container mt-5 bg-light p-4 rounded">
+
+
+
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8 text-center"> <!-- Changed to col-md-8 for a wider layout -->
+            <div class="text-center">
+                <h4 class="mb-3">Your sequences are currently undergoing evaluation.</h4>
+                <p class="mb-3 mt-3"> This is your unique request identifier. Copy it and use it to search for your results later, by pasting it in the search bar.</p>
+                <div class="input-group">
+                    <input type="text" value="{{ user_request.hash }}" id="hashValue" class="form-control" readonly>
+                    <button type="button" onclick="copyHash()" class="btn btn-outline-light">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row justify-content-center mt-4"> <!-- Added margin-top -->
+        <div class="col-md-8"> 
+            <p>Your sequences are being evaluated. You will be automatically redirected to your results as soon as they are ready.</p>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="row justify-content-center">
+        <div class="col-md-7 text-center mb-2 mt-2"> 
+            <div class="progress" role="progressbar" aria-label="Loading progress" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: {{ progress }}%;">
+                    <span id="progress-text">{{ progress }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Email Form -->
+    <div class="row justify-content-center mt-4"> 
+        <div class="col-md-7 text-center"> 
+            <form method="POST">
+                {% csrf_token %}
+                <label for="{{ form.email.id_for_label }}" class="mb-3">Provide your email below to receive an E-Mail notification when the results are available.</label>
+                {{ form.email }}
+                <button class="btn btn-outline-light mt-2" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyHash() {
+      /* Get the text input element */
+      var inputElement = document.getElementById('hashValue'); 
+      
+      /* Select the text in the input element */
+      inputElement.select();
+      
+      /* Copy the selected text to the clipboard */
+      document.execCommand('copy');
+      
+      /* Deselect the text */
+      window.getSelection().removeAllRanges();
+      
+      /* Display a message (you can customize this part) */
+      var alertElement = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            Request hash copied to clipboard
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    
+    /* Display the Bootstrap alert by appending it to the #alert-container div */
+    document.getElementById('alert-container').innerHTML = alertElement;
+    }
+
+
+    function checkStatus() {
+        /* Get the hash value from the user_request object */
+        var hash = '{{ user_request.hash }}';
+
+        /* Make a fetch request to the server to check the status of the user request */ 
+        fetch('/status/' + hash + '/')
+            .then(response => response.json())  /* Parse the JSON from the response */ 
+            .then(data => {
+                /* Get the progress bar element from the DOM */ 
+                var progressBar = document.querySelector('.progress-bar');
+                
+                /* Calculate the percentage of progress from the data received */ 
+                var percentage = Math.round(data.progress);
+                
+                /* Update the width and text of the progress bar to reflect the current progress */ 
+                progressBar.style.width = percentage + '%';
+                progressBar.innerText = percentage + '%';
+
+                /* If the progress is 100%, redirect to the results page */
+                if ( percentage === 100 ) {
+                    window.location.href = "{% url 'results' pk=user_request.hash %}";
+                } else {
+                    /* If the progress is not 100%, re-run the check_status function after a delay */
+                    setTimeout(checkStatus, '{{timeout}}');
+        }
+        });
+}
+
+    checkStatus();
+</script>
+
+
+{% endblock %}
